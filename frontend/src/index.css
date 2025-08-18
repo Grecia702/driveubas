@@ -1,0 +1,19 @@
+body.light {
+    --color-bg: #eee;
+    --color-text: #1b1b1b;
+    --color-text-secondary: #353535;
+    --color-primary: #cacaca;
+    --color-secondary: #6c757d;
+    --color-border: #333;
+    --color-hover: #11111118;
+}
+
+body.dark {
+    --color-bg: #121212;
+    --color-text: #d8d7d7;
+    --color-text-secondary: #acacac;
+    --color-primary: #E0E0E0;
+    --color-secondary: #707070;
+    --color-border: #444;
+    --color-hover: #ffffff36;
+}

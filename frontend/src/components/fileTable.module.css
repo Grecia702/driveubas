@@ -5,20 +5,23 @@ table {
     border-radius: 15;
     overflow: hidden;
     border: 1px solid;
-    border-color: #ccc
+    border-color: var(--color-border);
 }
 
 th {
-    border: 1px solid #ccc;
+    border: 1px solid;
+    border-color: var(--color-border);
     border-radius: 5px;
     padding: 8px;
     text-align: left;
     font-family: sans-serif;
-    color: rgb(44, 44, 44);
+    color: (--color-text);
 }
 
 td {
-    border: 1px solid #ccc;
+    border: 1px solid;
+    border-color: var(--color-border);
+    color: var(--color-text-secondary);
     padding: 16px;
     gap: 20px;
     font-family: sans-serif
@@ -44,7 +47,7 @@ td {
 }
 
 button:hover {
-    background-color: rgba(165, 179, 192, 0.541);
+    background-color: var(--color-hover);
     border-radius: 75px;
 }
 
@@ -54,4 +57,8 @@ button:hover {
     flex-direction: row;
     align-items: center;
     padding: 8px;
+}
+
+.icon {
+    color: var(--color-secondary);
 }

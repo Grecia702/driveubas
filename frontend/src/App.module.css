@@ -1,20 +1,17 @@
 body {
-    height: 100vh;
-    padding: 0;
     margin: 0;
+    padding: 0;
+    height: 100vh;
     box-sizing: border-box;
-    background-color: #eee;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+}
+
+.container {
+    padding-left: 32px;
+    padding-right: 32px;
+    height: 100vh;
     position: relative;
-}
-
-body.light {
-    background-color: #eee;
-    color: #000;
-}
-
-body.dark {
-    background-color: #121212;
-    color: #fff;
 }
 
 p,
@@ -30,26 +27,19 @@ input {
     padding: 8px;
     border-radius: 4px;
     border-width: 1px;
+    border-color: var(--color-border);
     outline: none;
+    background-color: var(--color-bg);
+    color: var(--color-text);
 }
 
 input:focus {
-    border: 1px solid #0412db;
-}
-
-.container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding-left: 32px;
-    padding-right: 32px;
+    border: 1px solid var(--color-primary);
 }
 
 .item_container {
-    border-style: solid;
-    border-width: 2px;
-    border-color: gray;
+    border: 1px solid;
+    border-color: var(--color-border);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -65,21 +55,47 @@ input:focus {
 
 .buttonNew {
     all: unset;
-    margin-bottom: 12;
-    background-color: #ccc;
-    border: 1px solid #aaa;
+    margin-bottom: 12px;
+    background-color: var(--color-secondary);
+    border: 1px solid var(--color-secondary);
     border-radius: 8px;
     padding: 8px;
     font-family: sans-serif;
+    color: var(--color-text);
 }
 
 .buttonNew:hover {
-    all: unset;
+    background-color: var(--color-hover);
+    border-color: var(--color-hover);
     cursor: pointer;
-    margin-bottom: 12;
-    background-color: #aaa;
-    border: 1px solid #aaa;
+}
+
+.buttonTheme {
+    all: unset;
+    padding: 12px;
+    border-radius: 32px;
+}
+
+.buttonTheme:hover {
+    cursor: pointer;
+    filter: brightness(0.9);
+}
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+}
+
+.modal {
+    width: 80%;
+    max-width: 500px;
+    background: var(--color-bg, white);
+    padding: 24px;
     border-radius: 8px;
-    padding: 8px;
-    font-family: sans-serif;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }

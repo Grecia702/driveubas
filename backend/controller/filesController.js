@@ -2,31 +2,41 @@ const fs = require('fs');
 const path = require('path');
 const Busboy = require('busboy');
 const UPLOAD_DIR = path.join(__dirname, '..', 'uploads');
+const mime = require('mime-types')
+const { fileType, sortByField, getDirectorySize, mapFiles } = require('../utils/fileUtils')
+
 
 const fileList = (req, res) => {
-    const files = fs.readdirSync(UPLOAD_DIR);
+    const relativeDir = req.query.dir || "";
+    const { sortBy, sortOrder } = req.query
+    const currentDir = path.join(UPLOAD_DIR, relativeDir);
+    let size = 0;
+    if (!currentDir.startsWith(UPLOAD_DIR)) {
+        return res.status(400).json({ error: "Acesso negado" });
+    }
+    const files = fs.readdirSync(currentDir);
     const arquivos = files.map((nome, index) => {
-        const filePath = path.join(UPLOAD_DIR, nome);
+        const filePath = path.join(currentDir, nome);
+        const mimeType = mime.lookup(filePath);
         const stats = fs.statSync(filePath);
+        const type = stats.isFile() ? fileType(mimeType) : (stats.isDirectory() ? 'directory' : 'other')
+        if (type === "directory") {
+            size = getDirectorySize(filePath);
+        } else {
+            size = stats.size;
+        }
         return {
             id: index,
             nome,
-            size: stats.size
+            size,
+            type,
+            mimeType
         };
     });
-    res.json(arquivos)
-};
-
-const mapFiles = () => {
-    const files = fs.readdirSync(UPLOAD_DIR);
-    return files.map((nome, index) => {
-        const filePath = path.join(UPLOAD_DIR, nome);
-        const stats = fs.statSync(filePath);
-        return {
-            id: index,
-            nome,
-            size: stats.size
-        };
+    sortByField(arquivos, sortBy, sortOrder)
+    res.json({
+        currentPath: relativeDir,
+        arquivos,
     });
 };
 
@@ -40,7 +50,6 @@ const upload = (req, res) => {
             const savePath = path.join(__dirname, '../uploads', actualFilename);
             const writeStream = fs.createWriteStream(savePath);
             file.pipe(writeStream);
-
         });
 
         busboy.on('finish', () => {
@@ -54,41 +63,72 @@ const upload = (req, res) => {
     }
 };
 
-const download = (req, res) => {
-    const id = req.params.id;
-    const fileName = mapFiles()[id].nome
-    const filePath = path.join(__dirname, '../uploads', fileName);
-    if (!fs.existsSync(filePath)) {
+const download = async (req, res) => {
+    try {
+        const folder = req.query.folder || '';
+        const fileName = req.query.file;
+        if (!fileName) return res.status(400).json({ error: 'Nome do arquivo obrigatório' });
+        const filePath = path.join(UPLOAD_DIR, folder, fileName);
+        await fs.promises.access(filePath, fs.constants.R_OK);
+        res.download(filePath, fileName, (err) => {
+            if (err) console.error('Erro no download:', err);
+        });
+    } catch {
         return res.status(404).json({ error: 'Arquivo não encontrado' });
     }
+};
 
-    res.download(filePath, fileName, (err) => {
-        if (err) {
-            console.error("Erro no download:", err);
-            res.status(500).json({ error: 'Erro ao baixar o arquivo' });
-        }
-    });
+const newDirectory = (req, res) => {
+    const { name } = req.body
+    const dirPath = path.join(__dirname, '../uploads', name);
+    fs.mkdirSync(dirPath, { recursive: true });
+    return res.status(200).json({ message: 'Pasta criada com sucesso' })
 };
 
 const fileDelete = (req, res) => {
     try {
         const id = req.params.id
-        const fileName = mapFiles()[id].nome
+        const fileName = mapFiles(UPLOAD_DIR)[id].nome
         const filePath = path.join(__dirname, '../uploads', fileName)
-        console.log(filePath)
-        fs.unlink(filePath, (err) => {
-            if (err) {
-                console.error('Erro ao deletar o arquivo:', err);
-                return;
-            }
-            console.log('Arquivo deletado com sucesso!');
-        });
-        return res.status(200).json({ message: 'Arquivo deletado com sucesso' })
+        const stats = fs.statSync(filePath)
+        if (stats.isDirectory) {
+            fs.rmSync(filePath, { recursive: true, force: true })
+            return res.status(200).json({ message: 'Pasta deletada com sucesso' })
+        } else {
+            fs.unlinkSync(filePath, (err) => {
+                if (err) {
+                    console.error('Erro ao deletar o arquivo:', err);
+                    return;
+                }
+                console.log('Arquivo deletado com sucesso!');
+                return res.status(200).json({ message: 'Arquivo deletado com sucesso' })
+            });
+        }
     } catch (error) {
         res.status(500).json({ error: 'Erro ao deletar o arquivo' });
         console.log(error)
     }
 }
 
+const fileRename = (req, res) => {
+    try {
+        const id = req.params.id
+        const { newName } = req.body
+        const oldFileName = mapFiles(UPLOAD_DIR)[id].nome
+        const oldFilePath = path.join(__dirname, '../uploads', oldFileName)
+        const newFilePath = path.join(__dirname, '../uploads', newName)
+        fs.rename(oldFilePath, newFilePath, (err) => {
+            if (err) {
+                console.error('Erro ao renomear o arquivo:', err);
+                return;
+            }
+            console.log('Arquivo renomeado com sucesso!');
+            return res.status(200).json({ message: `Arquivo renomeado com sucesso: de ${oldFilePath} para ${newFilePath}` })
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Erro ao renomear o arquivo' });
+        console.log(error)
+    }
+}
 
-module.exports = { upload, download, fileList, fileDelete }
+module.exports = { upload, download, newDirectory, fileList, fileDelete, fileRename }

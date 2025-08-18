@@ -8,9 +8,11 @@ router.post("/upload", (req, res) => {
     const busboy = Busboy({ headers: req.headers });
     filesController.upload(req, res, busboy);
 });
+router.post("/newDirectory", filesController.newDirectory);
 router.get("/list", filesController.fileList)
-router.get("/download/:id", filesController.download);
+router.get("/download/", filesController.download);
 router.delete("/delete/:id", filesController.fileDelete);
+router.patch("/rename/:id", filesController.fileRename);
 
 
 module.exports = router;

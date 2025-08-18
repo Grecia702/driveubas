@@ -42,13 +42,14 @@ const fileList = (req, res) => {
 
 const upload = (req, res) => {
     try {
+        const folder = req.query.folder || '';
         const busboy = Busboy({ headers: req.headers });
         const uploadDir = path.join(__dirname, '../uploads');
         if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
         busboy.on('file', (fieldname, file, filename) => {
             const actualFilename = typeof filename.filename === 'string' ? filename.filename : 'unknown_file';
-            const savePath = path.join(__dirname, '../uploads', actualFilename);
-            const writeStream = fs.createWriteStream(savePath);
+            const uploadPath = path.join(UPLOAD_DIR, folder, actualFilename);
+            const writeStream = fs.createWriteStream(uploadPath);
             file.pipe(writeStream);
         });
 
@@ -87,9 +88,9 @@ const newDirectory = (req, res) => {
 
 const fileDelete = (req, res) => {
     try {
-        const id = req.params.id
-        const fileName = mapFiles(UPLOAD_DIR)[id].nome
-        const filePath = path.join(__dirname, '../uploads', fileName)
+        const folder = req.query.folder || '';
+        const fileName = req.query.file;
+        const filePath = path.join(UPLOAD_DIR, folder, fileName)
         const stats = fs.statSync(filePath)
         if (stats.isDirectory) {
             fs.rmSync(filePath, { recursive: true, force: true })
@@ -112,11 +113,11 @@ const fileDelete = (req, res) => {
 
 const fileRename = (req, res) => {
     try {
-        const id = req.params.id
+        const folder = req.query.folder || '';
+        const fileName = req.query.file;
         const { newName } = req.body
-        const oldFileName = mapFiles(UPLOAD_DIR)[id].nome
-        const oldFilePath = path.join(__dirname, '../uploads', oldFileName)
-        const newFilePath = path.join(__dirname, '../uploads', newName)
+        const oldFilePath = path.join(UPLOAD_DIR, folder, fileName)
+        const newFilePath = path.join(UPLOAD_DIR, folder, newName)
         fs.rename(oldFilePath, newFilePath, (err) => {
             if (err) {
                 console.error('Erro ao renomear o arquivo:', err);

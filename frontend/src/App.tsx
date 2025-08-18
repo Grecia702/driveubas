@@ -6,6 +6,8 @@ import styles from './App.module.css'
 import FileTable from './components/fileTable';
 import CreateDirectory from './components/createDirectory';
 import Button from './components/button';
+import { useTheme } from './context/themeContext.tsx';
+import { MdDarkMode, MdLightMode } from "react-icons/md";
 
 Modal.setAppElement("#root");
 
@@ -23,8 +25,8 @@ interface UploadPanel {
 }
 
 interface selectedFile {
-  id: number,
-  name: string,
+  oldName: string
+  newName: string,
 }
 
 function App() {
@@ -34,9 +36,9 @@ function App() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isDirOpen, setIsDirOpen] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<selectedFile | null>({ id: 0, name: '' });
+  const [selectedFile, setSelectedFile] = useState<selectedFile>({ newName: '', oldName: '' });
   const [path, setPath] = useState("");
-
+  const { theme, toggleTheme } = useTheme();
   const fetchFiles = async (path: string) => {
     try {
       const safePath = path ?? ''
@@ -78,29 +80,25 @@ function App() {
     setVisible(true);
 
     try {
-      await axios.post("http://localhost:8000/api/v1/files/upload", formData, {
+      await axios.post(`http://localhost:8000/api/v1/files/upload?folder=${path}`, formData, {
         onUploadProgress: (progressEvent) => {
           const percent = Math.round((progressEvent.loaded * 100) / files.reduce((acc, f) => acc + f.size, 0));
           setFile(prev => prev ? { ...prev, progress: percent } : prev);
           console.log('percent: ', percent)
         },
       });
-      if (file) {
-        setFile({ ...file, title: 'Upload completo' });
-      }
+      setFile(prev => prev ? { ...prev, title: 'Upload completo' } : prev);
       fetchFiles(path)
     } catch (error) {
       console.error("Erro no upload:", error);
     }
     e.target.value = "";
-
   };
 
-  const handleRename = async (id: number, name: string,) => {
-    console.log(id, name)
+  const handleRename = async (newName: string, oldName: string,) => {
     try {
-      await axios.patch(`http://localhost:8000/api/v1/files/rename/${id}`, {
-        newName: name
+      await axios.patch(`http://localhost:8000/api/v1/files/rename?folder=${path}&file=${oldName}`, {
+        newName: newName
       })
       fetchFiles(path)
     } catch (error) {
@@ -108,9 +106,9 @@ function App() {
     }
   }
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (name: string) => {
     try {
-      await axios.delete(`http://localhost:8000/api/v1/files/delete/${id}`)
+      await axios.delete(`http://localhost:8000/api/v1/files/delete?folder=${path}&file=${name}`)
       fetchFiles(path)
     } catch (error) {
       console.error("Erro ao deletar arquivo:", error);
@@ -120,7 +118,13 @@ function App() {
   return (
     <>
       <div className={styles.container}>
-        <h1>Driveubas/{path}</h1>
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', width: '100%', justifyContent: 'space-between' }}>
+          <h1 style={{ alignSelf: 'center' }}>Driveubas/{path}</h1>
+          <button className={styles.buttonTheme} onClick={() => toggleTheme()}>
+            {theme === 'light' ? (<MdDarkMode size={32} />) : (<MdLightMode size={32} color={'#ccc'} />)}
+          </button>
+        </div>
+
         <div style={{ display: 'flex', flexDirection: 'row', gap: 12, marginBottom: 24, alignSelf: 'flex-start' }}>
           <button className={styles.buttonNew} onClick={handleButtonClick}>Upload</button>
           <button className={styles.buttonNew} onClick={() => setIsDirOpen(true)}>Novo Diretorio</button>
@@ -145,39 +149,25 @@ function App() {
         />
         {file && (<UploadPanel title={file.title} subtitle={file.subtitle} progress={file.progress} visible={visible} setVisible={setVisible} />)}
       </div>
-      <Modal style={{
-        content: {
-          width: "15%",
-          maxWidth: "500px",
-          margin: "auto",
-          inset: "unset",
-          padding: "24px",
-          borderRadius: "8px"
-        },
-        overlay: {
-          backgroundColor: "rgba(0,0,0,0.6)",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center"
-        }
-      }}
+      <Modal
+        className={styles.modal}
+        overlayClassName={styles.overlay}
+        style={{}}
         isOpen={isOpen} onRequestClose={() => setIsOpen(false)}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <p style={{ padding: 0, margin: 0 }}>Renomear</p>
           <input
             type="text"
-            value={selectedFile?.name}
-            onChange={(e) => setSelectedFile(prev =>
-              prev ? { ...prev, name: e.target.value } : { id: 0, name: e.target.value }
-            )}
+            value={selectedFile?.newName}
+            onChange={(e) => setSelectedFile(prev => prev ? { ...prev, newName: e.target.value } : { oldName: '', newName: e.target.value })}
             autoFocus={true}
             maxLength={100}
             spellCheck={false}
           />
           <div style={{ display: 'flex', flexDirection: 'row', alignSelf: 'flex-end', gap: 12 }} >
             <Button text='Cancelar ' variant='cancel' onClick={() => setIsOpen(false)} />
-            <Button text='OK' variant="confirm" onClick={() => { handleRename(selectedFile?.id || 0, selectedFile?.name || ''); setIsOpen(false) }} />
+            <Button text='OK' variant="confirm" onClick={() => { handleRename(selectedFile?.newName, selectedFile?.oldName); setIsOpen(false) }} />
           </div>
         </div>
 

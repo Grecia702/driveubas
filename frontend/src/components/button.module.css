@@ -1,0 +1,30 @@
+.button {
+    all: unset;
+    padding: 8px;
+    padding-left: 16px;
+    padding-right: 16px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-family: sans-serif;
+    font-weight: 600;
+}
+
+.cancel {
+    color: rgb(29, 80, 245);
+}
+
+.confirm {
+    background-color: #1b78cf;
+    color: white;
+}
+
+.cancel:hover {
+    cursor: pointer;
+    background-color: #0000001f;
+    border: 1px solid #42424281;
+}
+
+.confirm:hover {
+    cursor: pointer;
+    background-color: #2782d6;
+}

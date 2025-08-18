@@ -1,0 +1,57 @@
+table {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+    border-radius: 15;
+    overflow: hidden;
+    border: 1px solid;
+    border-color: #ccc
+}
+
+th {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 8px;
+    text-align: left;
+    font-family: sans-serif;
+    color: rgb(44, 44, 44);
+}
+
+td {
+    border: 1px solid #ccc;
+    padding: 16px;
+    gap: 20px;
+    font-family: sans-serif
+}
+
+.buttonItem {
+    all: unset;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    padding: 4px;
+    border-radius: 10px;
+    font-family: sans-serif;
+}
+
+.buttonAction {
+    all: unset;
+    display: inline-flex;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 75px;
+}
+
+button:hover {
+    background-color: rgba(165, 179, 192, 0.541);
+    border-radius: 75px;
+}
+
+.buttonSort {
+    all: unset;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 8px;
+}

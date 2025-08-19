@@ -8,6 +8,7 @@ import CreateDirectory from './components/createDirectory';
 import Button from './components/button';
 import { useTheme } from './context/themeContext.tsx';
 import { MdDarkMode, MdLightMode } from "react-icons/md";
+import Logo from './assets/icon.jpg';
 
 Modal.setAppElement("#root");
 
@@ -16,6 +17,7 @@ interface Files {
   nome: string;
   size: number;
   type: string;
+  path: string;
 }
 
 interface UploadPanel {
@@ -39,6 +41,7 @@ function App() {
   const [selectedFile, setSelectedFile] = useState<selectedFile>({ newName: '', oldName: '' });
   const [path, setPath] = useState("");
   const { theme, toggleTheme } = useTheme();
+
   const fetchFiles = async (path: string) => {
     try {
       const safePath = path ?? ''
@@ -118,12 +121,23 @@ function App() {
   return (
     <>
       <div className={styles.container}>
-        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', width: '100%', justifyContent: 'space-between' }}>
-          <h1 style={{ alignSelf: 'center' }}>Driveubas/{path}</h1>
-          <button className={styles.buttonTheme} onClick={() => toggleTheme()}>
-            {theme === 'light' ? (<MdDarkMode size={32} />) : (<MdLightMode size={32} color={'#ccc'} />)}
+        <div style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div className={styles.spinner}>
+              <img src={Logo} alt="Logo" width={256} height={256} style={{ objectFit: 'cover' }} />
+            </div>
+            <h1>Driveubas/{path}</h1>
+          </div>
+
+          <button
+            className={styles.buttonTheme}
+            onClick={toggleTheme}
+            style={{ position: 'absolute', top: 0, right: 0 }}
+          >
+            {theme === 'light' ? <MdDarkMode size={32} /> : <MdLightMode size={32} color="#ccc" />}
           </button>
         </div>
+
 
         <div style={{ display: 'flex', flexDirection: 'row', gap: 12, marginBottom: 24, alignSelf: 'flex-start' }}>
           <button className={styles.buttonNew} onClick={handleButtonClick}>Upload</button>
@@ -172,7 +186,7 @@ function App() {
         </div>
 
       </Modal>
-      <CreateDirectory isOpen={isDirOpen} setIsOpen={setIsDirOpen} fetchFiles={fetchFiles} />
+      <CreateDirectory isOpen={isDirOpen} setIsOpen={setIsDirOpen} fetchFiles={fetchFiles} path={path} />
     </>
   )
 }

@@ -10,7 +10,8 @@ interface File {
     id: number;
     nome: string;
     size: number;
-    type: string
+    type: string;
+    path: string;
 }
 
 interface Props {
@@ -41,10 +42,10 @@ const FileTable: React.FC<Props> = ({ files, setFiles, onDownload, onDelete, onF
     };
 
     const fields = [
-        { sortBy: 'id', text: 'ID' },
-        { sortBy: 'nome', text: 'Nome' },
-        { sortBy: 'dono', text: 'Dono' },
-        { sortBy: 'size', text: 'Tamanho' },
+        { sortBy: 'id', text: 'ID', width: '5%' },
+        { sortBy: 'nome', text: 'Nome', width: '45%' },
+        { sortBy: 'dono', text: 'Dono', width: '20%' },
+        { sortBy: 'size', text: 'Tamanho', width: '20%' },
     ]
 
     const typeIcons: Record<string, React.ReactNode> = {
@@ -64,7 +65,7 @@ const FileTable: React.FC<Props> = ({ files, setFiles, onDownload, onDelete, onF
             <thead>
                 <tr>
                     {fields.map((fields) => (
-                        <th key={fields.sortBy}>
+                        <th key={fields.sortBy} style={{ width: fields.width }}>
                             <button className={styles.buttonSort} onClick={() => handleSort(fields.sortBy)}>
                                 {fields.text}
                                 {sort?.field === fields.sortBy ? (
@@ -75,7 +76,7 @@ const FileTable: React.FC<Props> = ({ files, setFiles, onDownload, onDelete, onF
                             </button>
                         </th>
                     ))}
-                    <th>
+                    <th style={{ width: '10%' }}>
                         Ações
                     </th>
                 </tr>
@@ -85,7 +86,7 @@ const FileTable: React.FC<Props> = ({ files, setFiles, onDownload, onDelete, onF
                     <tr key={file.id}>
                         <td>{file.id}</td>
                         <td>
-                            <button className={styles.buttonItem} onClick={() => file.type === 'directory' && onFetch(file.nome)}>
+                            <button className={styles.buttonItem} onClick={() => file.type === 'directory' && onFetch(file.path)}>
                                 {typeIcons[file.type] || typeIcons.default}
                                 {file.nome}
                             </button>

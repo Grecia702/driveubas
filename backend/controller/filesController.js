@@ -30,7 +30,8 @@ const fileList = (req, res) => {
             nome,
             size,
             type,
-            mimeType
+            mimeType,
+            path: path.join(relativeDir, nome),
         };
     });
     sortByField(arquivos, sortBy, sortOrder)
@@ -81,7 +82,8 @@ const download = async (req, res) => {
 
 const newDirectory = (req, res) => {
     const { name } = req.body
-    const dirPath = path.join(__dirname, '../uploads', name);
+    const folder = req.query.folder || '';
+    const dirPath = path.join(UPLOAD_DIR, folder, name);
     fs.mkdirSync(dirPath, { recursive: true });
     return res.status(200).json({ message: 'Pasta criada com sucesso' })
 };

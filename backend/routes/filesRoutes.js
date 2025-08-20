@@ -13,6 +13,7 @@ router.get("/list", filesController.fileList)
 router.get("/download/", filesController.download);
 router.delete("/delete/", filesController.fileDelete);
 router.patch("/rename", filesController.fileRename);
+router.patch("/move", filesController.fileMove);
 
 
 module.exports = router;

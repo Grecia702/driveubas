@@ -3,10 +3,10 @@ const path = require('path');
 const Busboy = require('busboy');
 const UPLOAD_DIR = path.join(__dirname, '..', 'uploads');
 const mime = require('mime-types')
+const archiver = require('archiver');
 const { fileType, sortByField, getDirectorySize, mapFiles } = require('../utils/fileUtils')
 
-
-const fileList = (req, res) => {
+const fileList = async (req, res) => {
     const relativeDir = req.query.dir || "";
     const { sortBy, sortOrder } = req.query
     const currentDir = path.join(UPLOAD_DIR, relativeDir);
@@ -41,7 +41,7 @@ const fileList = (req, res) => {
     });
 };
 
-const upload = (req, res) => {
+const upload = async (req, res) => {
     try {
         const folder = req.query.folder || '';
         const busboy = Busboy({ headers: req.headers });
@@ -70,11 +70,30 @@ const download = async (req, res) => {
         const folder = req.query.folder || '';
         const fileName = req.query.file;
         if (!fileName) return res.status(400).json({ error: 'Nome do arquivo obrigatório' });
+
         const filePath = path.join(UPLOAD_DIR, folder, fileName);
-        await fs.promises.access(filePath, fs.constants.R_OK);
-        res.download(filePath, fileName, (err) => {
-            if (err) console.error('Erro no download:', err);
-        });
+        const stats = fs.statSync(filePath)
+
+        if (stats.isDirectory()) {
+            res.setHeader('Content-Disposition', `attachment; filename=${fileName}.zip`);
+            res.setHeader('Content-Type', 'application/zip');
+            const archive = archiver('zip', {
+                zlib: { level: 9 }
+            });
+            archive.on('error', (err) => {
+                res.status(500).send({ error: err.message });
+            });
+            archive.pipe(res);
+            archive.directory(filePath, false);
+            archive.finalize();
+        } else {
+            res.download(filePath, fileName, (err) => {
+                if (err) {
+                    console.error('Erro no download:', err);
+                    res.status(500).send({ error: 'Falha no download' });
+                }
+            });
+        }
     } catch {
         return res.status(404).json({ error: 'Arquivo não encontrado' });
     }
@@ -88,7 +107,7 @@ const newDirectory = (req, res) => {
     return res.status(200).json({ message: 'Pasta criada com sucesso' })
 };
 
-const fileDelete = (req, res) => {
+const fileDelete = async (req, res) => {
     try {
         const folder = req.query.folder || '';
         const fileName = req.query.file;
@@ -113,14 +132,14 @@ const fileDelete = (req, res) => {
     }
 }
 
-const fileRename = (req, res) => {
+const fileRename = async (req, res) => {
     try {
         const folder = req.query.folder || '';
         const fileName = req.query.file;
         const { newName } = req.body
         const oldFilePath = path.join(UPLOAD_DIR, folder, fileName)
         const newFilePath = path.join(UPLOAD_DIR, folder, newName)
-        fs.rename(oldFilePath, newFilePath, (err) => {
+        await fs.rename(oldFilePath, newFilePath, (err) => {
             if (err) {
                 console.error('Erro ao renomear o arquivo:', err);
                 return;
@@ -134,4 +153,21 @@ const fileRename = (req, res) => {
     }
 }
 
-module.exports = { upload, download, newDirectory, fileList, fileDelete, fileRename }
+const fileMove = async (req, res) => {
+    try {
+        const { fromFolder, toFolder, filename } = req.body
+        if (!filename || !toFolder) {
+            return res.status(400).json({ error: "Parâmetros inválidos" });
+        }
+
+        const oldPath = path.join(UPLOAD_DIR, fromFolder, filename)
+        const newPath = path.join(UPLOAD_DIR, toFolder, filename)
+        fs.renameSync(oldPath, newPath);
+        return res.status(200).json({ message: 'Arquivo movido com sucesso' })
+    } catch (error) {
+        res.status(500).json({ error: `Erro ao renomear o arquivo: ${error.message}` });
+        console.log(error.message)
+    }
+}
+
+module.exports = { upload, download, newDirectory, fileList, fileDelete, fileRename, fileMove }

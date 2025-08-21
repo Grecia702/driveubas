@@ -1,60 +1,41 @@
-const fs = require('fs')
-const path = require('path');
-const mime = require('mime-types')
+const fs = require("fs");
+const path = require("path");
+const mime = require("mime-types");
 
-const fileType = (mimeType) => {
-    const fileType = mimeType.split("/")[0]
-    const subType = mimeType.split("/")[1]
-    if (fileType === "image") {
-        return "image"
+const fileType = (filePath) => {
+    const mimeType = mime.lookup(filePath);
+
+    if (!mimeType || typeof mimeType !== "string") {
+        return "unknown";
     }
-    if (fileType === "video") {
-        return "video"
-    }
-    if (fileType === "audio") {
-        return "audio"
-    }
+
+    const [fileType, subType] = mimeType.split("/");
+
+    if (fileType === "image") return "image";
+    if (fileType === "video") return "video";
+    if (fileType === "audio") return "audio";
+
     if (fileType === "application") {
-        if (subType === "pdf") {
-            return "pdf"
-        }
-        if (subType === "msword" || subType === "vnd.openxmlformats-officedocument.wordprocessingml.document") {
-            return "doc"
-        }
-        if (subType === "vnd.ms-excel" || subType === "vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
-            return "xls"
-        }
-        if (subType === "vnd.ms-powerpoint" || subType === "vnd.openxmlformats-officedocument.presentationml.presentation") {
-            return "pptx"
-        }
-        if (subType === "zip" || subType === "x-rar-compressed" || subType === "x-7z-compressed" || subType === "x-tar") {
-            return "zip"
-        }
-        if (subType === "x-msdos-program") {
-            return "exe"
-        }
-        if (subType === "x-iso9660-image") {
-            return "iso"
-        }
-        if (subType === "x-msdownload") {
-            return "msi"
-        }
+        if (subType === "pdf") return "pdf";
+        if (["msword", "vnd.openxmlformats-officedocument.wordprocessingml.document"].includes(subType)) return "doc";
+        if (["vnd.ms-excel", "vnd.openxmlformats-officedocument.spreadsheetml.sheet"].includes(subType)) return "xls";
+        if (["vnd.ms-powerpoint", "vnd.openxmlformats-officedocument.presentationml.presentation"].includes(subType)) return "pptx";
+        if (["zip", "x-rar-compressed", "x-7z-compressed", "x-tar"].includes(subType)) return "zip";
+        if (subType === "x-msdos-program") return "exe";
+        if (subType === "x-iso9660-image") return "iso";
+        if (subType === "x-msdownload") return "msi";
     }
+
     if (fileType === "text") {
-        if (subType === "plain") {
-            return "text"
-        }
-        if (subType === "html") {
-            return "html"
-        }
-        if (subType === "csv") {
-            return "csv"
-        }
-        if (subType === "json") {
-            return "json"
-        }
+        if (subType === "plain") return "text";
+        if (subType === "html") return "html";
+        if (subType === "csv") return "csv";
+        if (subType === "json") return "json";
     }
-}
+
+    return "unknown";
+};
+
 
 const sortByField = (arr, field, order) => {
     return arr.sort((a, b) => {

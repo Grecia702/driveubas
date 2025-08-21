@@ -15,7 +15,7 @@ function CreateDirectory({ isOpen, setIsOpen, fetchFiles, path }: DirectoryProps
     const [dirName, setDirName] = useState('Nova pasta')
     const handleCreateDir = async (dirName: string, path: string) => {
         try {
-            const res = await axios.post(`http://localhost:8000/api/v1/files/newDirectory?folder=${path}`, { name: dirName })
+            const res = await axios.post(`https://localhost:443/api/v1/files/newDirectory?folder=${path}`, { name: dirName })
             fetchFiles('')
             console.log(res.data.message)
         } catch (error) {

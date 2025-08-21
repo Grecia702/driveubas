@@ -18,3 +18,7 @@ build/
 
 backend/uploads/*
 backend/logs/*
+
+# Certificados
+
+*.pem

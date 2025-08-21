@@ -45,7 +45,7 @@ function App() {
   const fetchFiles = async (path: string) => {
     try {
       const safePath = path ?? ''
-      const res = await fetch(`http://localhost:8000/api/v1/files/list?dir=${safePath}`);
+      const res = await fetch(`https://localhost:443/api/v1/files/list?dir=${safePath}`);
       const data = await res.json();
       setPath(safePath)
       setFiles(data.arquivos);
@@ -63,7 +63,7 @@ function App() {
   };
 
   const handleDownload = (filename: string, directory: string) => {
-    const url = `http://localhost:8000/api/v1/files/download?folder=${encodeURIComponent(directory)}&file=${encodeURIComponent(filename)}`;
+    const url = `https://localhost:443/api/v1/files/download?folder=${encodeURIComponent(directory)}&file=${encodeURIComponent(filename)}`;
     window.open(url, "_blank");
   };
 
@@ -83,7 +83,7 @@ function App() {
     setVisible(true);
 
     try {
-      await axios.post(`http://localhost:8000/api/v1/files/upload?folder=${path}`, formData, {
+      await axios.post(`https://localhost:443/api/v1/files/upload?folder=${path}`, formData, {
         onUploadProgress: (progressEvent) => {
           const percent = Math.round((progressEvent.loaded * 100) / files.reduce((acc, f) => acc + f.size, 0));
           setFile(prev => prev ? { ...prev, progress: percent } : prev);
@@ -100,7 +100,7 @@ function App() {
 
   const handleRename = async (newName: string, oldName: string,) => {
     try {
-      await axios.patch(`http://localhost:8000/api/v1/files/rename?folder=${path}&file=${oldName}`, {
+      await axios.patch(`https://localhost:443/api/v1/files/rename?folder=${path}&file=${oldName}`, {
         newName: newName
       })
       fetchFiles(path)
@@ -111,7 +111,7 @@ function App() {
 
   const handleDelete = async (name: string) => {
     try {
-      await axios.delete(`http://localhost:8000/api/v1/files/delete?folder=${path}&file=${name}`)
+      await axios.delete(`https://localhost:443/api/v1/files/delete?folder=${path}&file=${name}`)
       fetchFiles(path)
     } catch (error) {
       console.error("Erro ao deletar arquivo:", error);

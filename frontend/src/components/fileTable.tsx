@@ -36,7 +36,7 @@ const FileTable: React.FC<Props> = ({ files, setFiles, onDownload, onDelete, onF
             order = "DESC";
         }
         setSort({ field, order });
-        axios.get(`http://localhost:8000/api/v1/files/list?sortBy=${field}&sortOrder=${order}`)
+        axios.get(`https://localhost:443/api/v1/files/list?sortBy=${field}&sortOrder=${order}`)
             .then((res) => setFiles(res.data.arquivos));
         setPath('')
     };

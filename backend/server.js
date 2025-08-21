@@ -2,8 +2,14 @@ const express = require("express")
 const app = express();
 const cors = require('cors');
 // const authRoute = require('routes/authRoute')
+const fs = require('fs')
 const fileRoutes = require('./routes/filesRoutes')
-const port = 8000;
+const https = require('https')
+
+var httpsOptions = {
+    key: fs.readFileSync("./certificates/privatekey.pem"),
+    cert: fs.readFileSync("./certificates/certificate.pem")
+};
 
 app.use(express.json())
 app.use(cors({
@@ -18,6 +24,7 @@ app.use(cors({
     exposedHeaders: ['Content-Disposition'],
 }));
 
+
 app.use("/api/v1/auth", (req, res, next) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     next()
@@ -25,6 +32,6 @@ app.use("/api/v1/auth", (req, res, next) => {
 
 app.use("/api/v1/files", fileRoutes);
 
-app.listen(port, () => {
-    console.log("Servidor rodando")
-})
+https.createServer(httpsOptions, app).listen(443, () => {
+    console.log("Servidor HTTPS rodando na porta 443");
+});
